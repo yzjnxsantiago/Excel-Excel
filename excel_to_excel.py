@@ -31,7 +31,7 @@ source_sheets = ["Project 1", "Project 2"]
 
 destination_column = ["A", "B", "C"]
 
-destination_workbook = xw.Book("Path to destination goes here")
+destination_workbook = xw.Book("Path to destination goes herea")
 destination_sheet = destination_workbook.sheets["Sheet1"]
 
 count = 1
