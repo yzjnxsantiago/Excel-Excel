@@ -14,19 +14,24 @@ from urllib import response
 import xlwings as xw
 from pywintypes import com_error
 from building_blocks import *
+from setup_gui import *
 
 #-------MAIN-------#
 
-# setup()
+window=tk.Tk()
+setup_gui = setup(window)
 
-source_workbook_paths = find_files(".xlsx", "C:/Users/ssira/Documents/Python Scripts/Excel-Excel/Source Workbooks Testing/")
+source_path = str(setup_gui.s_path.get())
 
-source_cells = [["A1", "B1"], ["A2", "B2"]]
+source_workbook_paths = find_files(".xlsx", source_path)
+
+source_cells = setup_gui.s_cells
+
 source_sheets = ["Project 1", "Project 2"]
 
 destination_column = ["A", "B", "C"]
 
-destination_workbook = xw.Book("C:/Users/ssira/Documents/Python Scripts/Excel-Excel/Destination Workbook Testing/Destination.xlsx")
+destination_workbook = xw.Book("Path to destination goes here")
 destination_sheet = destination_workbook.sheets["Sheet1"]
 
 count = 1

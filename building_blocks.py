@@ -33,7 +33,7 @@ def find_files(filename, search_path):
    result = []
 
    # Walking top-down from the root
-   for root, files in os.walk(search_path):
+   for root, dir, files in os.walk(search_path):
       for file in files:
          if filename in file:
             result.append(os.path.join(root, file))
@@ -43,5 +43,22 @@ def find_files(filename, search_path):
 
 def move_cell(row, cell, destination_column, sheet, destination):
 
-        destination[concat(destination_column, str(row))].value = sheet[cell].value
+    destination[concat(destination_column, str(row))].value = sheet[cell].value
 
+#-------SHEET CHECK-------#
+
+def id_sheets(directory):
+
+    books = []
+    sheets = []
+
+    books = find_files(".xlsx", directory)   
+
+    book = xw.Book(books[0])
+
+    for i in range(len(book.sheet_names)):
+        sheets.append(book.sheet_names[i])
+
+    return sheets
+
+#   
