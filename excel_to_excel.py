@@ -18,36 +18,67 @@ from setup_gui import *
 
 #-------MAIN-------#
 
+# Create a tkinter object
 window=tk.Tk()
+
+# Use the setup_gui for our tkinter object and return the information 
 setup_gui = setup(window)
 
+# Get the source path from the gui
 source_path = str(setup_gui.s_path.get())
 
+# Get the destination path from the gui
+destination_path = str(setup_gui.d_path.get())
+
+# Get the paths to all the excel files in the source_path folder
 source_workbook_paths = find_files(".xlsx", source_path)
 
+# Get the cells from the gui (2D Array)
 source_cells = setup_gui.s_cells
 
+# Sheets that will be used
 source_sheets = ["Project 1", "Project 2"]
 
-destination_column = ["A", "B", "C"]
+# An array of strings that contains the columns each cell value will go to
+destination_columns = setup_gui.d_cells
 
-destination_workbook = xw.Book("Path to destination goes herea")
+# Open the destination workbook
+destination_workbook = xw.Book(destination_path)
+# Open the destination sheet
 destination_sheet = destination_workbook.sheets["Sheet1"]
 
-count = 1
-
+# Initialize the count for the starting row of the destination
+count = 2
+    
+# Start by iterating through each source workbook
 for workbook in source_workbook_paths:
 
+    # If the workbook has ~$ it does not need to read it
     if "~$" in workbook:
         continue
 
-    source_workbook = xw.Book(workbook)
+    # Try opening the source workbook 
+    try:    
+        source_workbook = xw.Book(workbook)
+    except:
+        continue
     
-    for (sheet_cells, sheet) in zip(source_cells, source_sheets):
-            for (cell, column) in zip(sheet_cells, destination_column):
-                move_cell(count, cell, column, source_workbook.sheets[sheet], destination_sheet)
-                
-            count = count + 1
+    # The main algorithm to iterate though each cell that belongs to each sheet and place the values of the cells the correct location 
+    # at the destination worbook
+    for (sheet_cells, sheet, sheet_columns) in zip(source_cells, source_sheets, destination_columns):
+        for (cell, column) in zip(sheet_cells, sheet_columns):
+            move_cell(count, cell, column, source_workbook.sheets[sheet], destination_sheet)
+
+        # Increase the row count            
+        count = count + 1
+    
+    # Try to save and close the workbook
+    try:
+        source_workbook.save()
+        source_workbook.close()
+    except:
+        print("1 Error Added")
+        pass
 
 
 
