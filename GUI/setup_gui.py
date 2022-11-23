@@ -57,7 +57,8 @@ def add_cells(source_entry, cell_list, all_cells, placement):
 
     if (placement == 'source'):
 
-        all_cells.append(str(source_entry.get()))
+        if str(source_entry.get())[0].isalpha() and str(source_entry.get())[1].isnumeric():
+            all_cells.append(str(source_entry.get()))
 
     if (placement == 'destin'):
 
@@ -136,7 +137,7 @@ class setup():
         #-------TITLE BAR-------#
 
         # Title bar image created with powerpoint
-        self.img = ImageTk.PhotoImage(Image.open("Path to Title Bar"))
+        self.img = ImageTk.PhotoImage(Image.open("C:/Users/ssira/Documents/Python Scripts/Title Bar2.png"))
         # Use a label to place the image
         self.label = ttk.Label(image=self.img)
         self.label.image = self.img
@@ -222,7 +223,6 @@ class setup():
         self.destination_cell.place(x = 300+50, y = 250)
 
         #------CLOSE------#
-
         window.title('Excel to Excel')
         window.geometry("980x640+10+10")
         window.resizable(False,False)
