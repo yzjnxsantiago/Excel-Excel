@@ -1,6 +1,8 @@
 # Author: yzjnxsantiago
 # Start Date: Tuesday, November 9, 2022
 
+__name__ = "__main__"
+
 LARGEFONT =("Verdana", 35)
 BACKGROUND_COLOR = "#262335"
 SECONDARY_COLOR  = "#241b2f"
@@ -8,7 +10,8 @@ BUTTON_COLOR     = "#5a32fa"
 BUTTON_HIGHLIGHT = "#7654ff"
 
 #--------LIBRARIES--------#
-
+import sys
+sys.path.append('./')
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
@@ -16,8 +19,11 @@ from zlib import Z_FIXED
 from PIL import ImageTk, Image
 from tkinter import filedialog
 from building_blocks import *
+from excel_to_excel import excel_excel
 import threading
 import time
+
+alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']
 
 def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame):
     
@@ -67,7 +73,15 @@ def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame):
             if placement_x > 1000:
                 placement_x = 290
                 placement_y += 50
-        
+
+def browse_button_end(directory_label):
+    filename = filedialog.askopenfilename(title = "Select a File",
+                                          filetypes = (("Excel files",
+                                                        "*.xlsx*"),
+                                                       ("All files",
+                                                        "*.*")))
+    directory_label.set(filename)
+
 class tkinterApp(tk.Tk):
 
     # __init__ function for class tkinterApp
@@ -93,7 +107,7 @@ class tkinterApp(tk.Tk):
   
         # iterating through a tuple consisting
         # of the different page layouts
-        for F in (StartPage, Page1, Page2, Page3):
+        for F in (StartPage, Page1, Page2, Page3, Page4):
   
             frame = F(container, self)
   
@@ -150,8 +164,6 @@ class StartPage(tk.Frame):
                             command = lambda : controller.show_frame(Page1))
         create.place(x = 300, y = 20)
 
-
-
 class Page1(tk.Frame):
      
     def __init__(self, parent, controller):
@@ -174,7 +186,7 @@ class Page1(tk.Frame):
         style.configure('TButton', font = ('Calibri', 15))
         style.configure('TButton', background = "#4733BF", )
 
-        style.configure('TLabel', font = ('Calabri', 15))
+        style.configure('TLabel', font = ('Calabri', 12))
         style.configure('TLabel', foreground = 'White')
         style.configure('TLabel', background = SECONDARY_COLOR)
 
@@ -199,13 +211,13 @@ class Page1(tk.Frame):
         #-Buttons-#
 
         browse_source  = ttk.Button(self, text="Browse Files", 
-                            command= lambda : browse_button(directorystr, self, controller.get_frame(Page2)))
+                            command= lambda : browse_button(self.directorystr, self, controller.get_frame(Page2)))
         browse_source.place(x = 290, y = 35 )
         
         #-Labels-#
 
-        directorystr = StringVar()
-        source_directory = ttk.Label(self, textvariable=directorystr)
+        self.directorystr = StringVar()
+        source_directory = ttk.Label(self, textvariable=self.directorystr)
         source_directory.place(x = 420, y = 40)
 
         #------MAIN SECTION------#
@@ -219,15 +231,31 @@ class Page1(tk.Frame):
         files = ttk.Label(self, text=' Source Files ', font=('Calabri', 12), borderwidth=2, relief="groove")
         files.place(x=275, y =115)
 
+        #-----DESTINATION SECTION-----#
+
+        destination_frame = ttk.LabelFrame(self, text='Destination', height = 100, width = 900)
+        destination_frame.place(x = 275, y = 535)
+
+        #-Buttons-#
+
+        browse_destination  = ttk.Button(self, text="Browse Files", 
+                            command= lambda : browse_button_end(self.directory_des))
+        browse_destination.place(x = 290, y = 570)
+       
+        self.directory_des = StringVar()
+        destination_directory = ttk.Label(self, textvariable=self.directory_des, font = ('Calabri', 12))
+        destination_directory.place(x = 420, y = 572)
+
+    def get_directories(self):
+        return [self.directorystr, self.directory_des]
 
 def listBox(frame, x1, y1, x2, y2, filename):
 
-    if y2 > 605:
+    if y2 > 605/1.5:
         return
 
     label = ttk.Label(frame, text=filename, font= ('Calabri', 10), borderwidth=2, relief="solid", width= 128)
     label.place(x = x2, y = y2)
-
   
 # third window frame page2
 class Page2(tk.Frame):
@@ -270,16 +298,38 @@ class Page2(tk.Frame):
 
         #------MAIN SECTION-------#
 
-        type_a = Button(self, text="Type a", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
+        type_a = Button(self, text="Sheet Validation", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
                         background= BUTTON_HIGHLIGHT, foreground='White', activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2",
                         )
-        type_a.place(x=275, y = 550)
+        type_a.place(x=275, y = 300)
 
-        type_b = Button(self, text="Type b", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
+        type_b = Button(self, text="Cell to Column", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
                         background= BUTTON_HIGHLIGHT, foreground='White', activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2",
-                        command= lambda: controller.show_frame(Page3) 
+                        command= lambda: [controller.show_frame(Page3), create_columns(controller.get_frame(Page3), self.columns, self.cell_map, controller)] 
                         )
-        type_b.place(x=275+200, y = 550)
+        type_b.place(x=275+200, y = 300)
+
+        finish = Button(self, text="Finish", font= ('Calabri', 17), borderwidth=1, relief="ridge", width=8,       
+                        background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
+                        command = lambda: [controller.show_frame(Page4), threading.Thread(target = excel_excel, args=[controller.get_frame(Page1), controller.get_frame(Page2),
+                                                                                                                       controller.get_frame(Page3), controller.get_frame(Page4)]).start()
+                                                                                     ]
+                        )
+        finish.place(x = 1070, y = 645)
+
+        self.columns = []
+        self.click_count = []
+        self.cell_map = []
+        self.sheet_map = []
+
+    def get_columns(self):
+        return self.columns
+
+    def get_map(self):
+        return self.cell_map
+
+    def get_click_count(self):
+        return self.click_count
 
 class Page3(tk.Frame):
     def __init__(self, parent, controller):
@@ -307,7 +357,6 @@ class Page3(tk.Frame):
         menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
         menu_bar.place(x = 0, y =0)
         
-
         #-Buttons-#
         
         nav_source = Button(self, text="Source Directory Selection", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", activebackground=BUTTON_COLOR , activeforeground="White",  
@@ -322,89 +371,245 @@ class Page3(tk.Frame):
         source_cell = Entry(self, bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR, width= 5)
         source_cell.place(x = 290, y = 60)
 
+        cell_count = [0]
+
         confirm_cell = Button(self,text="Confirm Cell", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
-                              activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2" 
+                              activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command= lambda: add_cells(self, self.cells, cell_count, controller, source_cell)
                               )
         confirm_cell.place(x= 336, y = 58)
 
         #------CELL------#
 
+        self.cells = []
+
         cell_frame = ttk.LabelFrame(self, text='Cell', height = 90, width = 90)
         cell_frame.place(x = 450, y = 20)
 
-        cell = Button(self,text="A3", font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
-                      activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2")
-        cell.place(x=475, y=50)
+        #-----FINISH-----#
 
-        def drag_start(event):
-            widget = event.widget
-            widget.startX = event.x
-            widget.startY = event.y
+        finish = Button(self, text="Next Sheets", font= ('Calabri', 17), borderwidth=1, relief="ridge",     
+                        background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
+                        command= lambda: [controller.show_frame(Page2) , clear_page(self, controller)]
+                        )
+        finish.place(x = 1045, y = 645)
 
-        def drag_motion(event):
-            widget = event.widget
-            x = widget.winfo_x() - cell.startX + event.x
-            y = widget.winfo_y() - cell.startY + event.y
-            widget.place(x=x,y=y)
+def create_columns(frame, columns, cell_map, controller):
+
+    cell_map.append([])
+
+    column_x = 350
+    column_y = 300
+
+    column_x_start = column_x
+    column_y_start = column_y
+
+    click_count = controller.get_frame(Page2).get_click_count()
+
+    i = 0
+
+    while column_x < 1000:
+        columns.append(ttk.LabelFrame(frame, text=alphabet[i], height = 90, width = 90))
+        columns[i].place(x = column_x, y = column_y)
+        columns[i].update()
+        column_x += columns[i].winfo_width() + 10
+        cell_map[len(cell_map)-1].append(None)
+        i += 1
+    
+    column_x1_last = column_x
+    column_y1_last = column_y
+
+    click_count.append(0) 
+
+    right_button = Button(frame, text=">", font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
+                      activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command = lambda: shift_columns_left(frame, columns, click_count, left_button,
+                      controller))
+    right_button.place(x = column_x1_last + 10, y = column_y1_last + 25)
+
+    left_button = Button(frame, text="<", font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
+                      activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command = lambda: shift_columns_right(frame, columns, click_count, left_button,
+                      controller),
+                      state='disabled')
+    left_button.place(x = column_x_start - 40, y = column_y_start + 25)
+
+    return columns
+
+def shift_columns_left(frame, columns, click_count, left_button, controller):
+
+    cell_map = controller.get_frame(Page2).get_map()
+    columns[click_count[0]].pack_forget()
+    first_column_x1 = columns[0].winfo_x()
+    first_column_y1 = columns[0].winfo_y()
+
+    first_loop = True
+
+    for i in range(click_count[0], len(columns)):
+        if i + 1 < len(columns):
+            columns[i+1].place(x = first_column_x1, y = first_column_y1)
+            if cell_map[len(cell_map)-1][i+1]:
+                if i + 1 != click_count[0]:
+                    cell_map[len(cell_map)-1][i+1].place(x = first_column_x1 + 30, y = first_column_y1 + 30)
+            elif first_loop and cell_map[len(cell_map)-1][i]:
+                    cell_map[len(cell_map)-1][i].lower()
+            first_column_x1 += columns[i].winfo_width() + 10
+        else:
+            columns.append(ttk.LabelFrame(frame, text=alphabet[i+1], height = 90, width = 90))
+            cell_map[len(cell_map)-1].append(None)      
+            columns[i+1].place(x = first_column_x1, y = first_column_y1)
+            if cell_map[len(cell_map)-1][i+1]:
+                cell_map[len(cell_map)-1][i+1].lift()
+        
+        first_loop = False
+
+    click_count[0] += 1
+
+    left_button.configure(state="active")
+
+def shift_columns_right(frame, columns, click_count, left_button, controller):
+
+    cell_map = controller.get_frame(Page2).get_map()
+
+    columns_length = len(columns)
+
+    last_column_x1 = columns[columns_length-1].winfo_x()
+    last_column_y1 = columns[columns_length-1].winfo_y()
+
+    rightmost_column = columns[len(columns)-1]
+    rightmost_column.destroy()
+    
+    columns.pop()
+
+    columns_length = len(columns)
+
+    first_loop = True
+    
+    for i in range(columns_length):
+        if columns_length - i - 1 > click_count[0] - 1:
+            columns[columns_length - i - 1].place(x = last_column_x1, y = last_column_y1)
+            if cell_map[len(cell_map)-1][columns_length - i -1]:
+                cell_map[len(cell_map)-1][columns_length - i - 1].place(x = last_column_x1 + 30, y = last_column_y1 + 30)
+            elif first_loop and cell_map[len(cell_map)-1][columns_length- i]:
+                cell_map[len(cell_map)-1][columns_length-i].lower()
+            last_column_x1 -= columns[columns_length - i- 1].winfo_width() + 10
+        elif columns_length - i - 1 == click_count[0] - 1:
+            if cell_map[len(cell_map)-1][columns_length - i - 1]:
+                 cell_map[len(cell_map)-1][columns_length- i - 1].lift()
+        else:
+            break
+
+        first_loop = False
+        
             
-        cell.bind('<Button-1>', drag_start)  
-        cell.bind('<B1-Motion>', drag_motion)
 
-   
+    click_count[0] -= 1
 
-def add_cells(source_entry, cell_list, all_cells, placement):
+    if click_count[0] == 0:
+        left_button.configure(state="disabled")
 
-    all_cell_text = ""
+def add_cells(frame, cells, cell_count, controller, cell_entry):
 
-    if (placement == 'source'):
+    cells.append(Button(frame, text=cell_entry.get(), font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
+                        activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2"))
 
-        if str(source_entry.get())[0].isalpha() and str(source_entry.get())[1].isnumeric():
-            all_cells.append(str(source_entry.get()))
+    cell_map = controller.get_frame(Page2).get_map()
+    click_count = controller.get_frame(Page2).get_click_count()
 
-    if (placement == 'destin'):
+    current_cell = cells[cell_count[0]]
+    
+    current_cell.place(x=475, y=50)
 
-        if str(source_entry.get()).isalpha():
-            all_cells.append(str(source_entry.get()))
+    current_cell.lift()
+
+    def drag_start(event):
+        widget = event.widget
+        widget.startX = event.x
+        widget.startY = event.y
+
+    def drag_motion(event):
+        widget = event.widget
+        x = widget.winfo_x() - current_cell.startX + event.x
+        y = widget.winfo_y() - current_cell.startY + event.y
+        widget.place(x=x,y=y)
+        widget.lift()
+    
+    def clip_to_destination(event):
+        widget = event.widget
+        x = widget.winfo_x()
+        y = widget.winfo_y()
+        frame = controller.get_frame(Page2)
+        columns = frame.get_columns()
+
+        for i in range(click_count[0], len(columns)):
+            column_x1 = columns[i].winfo_x()
+            column_x2 = column_x1 + columns[i].winfo_width()
+            column_y1 = columns[i].winfo_y()
+            column_y2 = column_y1 + columns[i].winfo_height()
+            if x > column_x1 and x < column_x2 and y > column_y1 and y < column_y2:
+                widget.place(x=column_x1+ ((column_x2-column_x1)/3.25) , y = column_y1 + ((column_y2-column_y1)/3.25))
+                for j in range(len(cell_map[len(cell_map)-1])):
+                    if current_cell == cell_map[len(cell_map)-1][j]:
+                        break
+                cell_map[len(cell_map)-1][j] = None
+                cell_map[len(cell_map)-1][i] = current_cell
+                break
         
-    for i in range(len(all_cells)):
-        all_cell_text = all_cell_text + all_cells[i] + "\n"
+    current_cell.bind('<Button-1>', drag_start)  
+    current_cell.bind('<B1-Motion>', drag_motion)
+    current_cell.bind('<ButtonRelease>', clip_to_destination)
+    
+    cell_entry.delete(0, 'end')
+    cell_count[0] += 1
+
+def clear_page(frame: Frame, controller):
+
+    cell_map = controller.get_frame(Page2).get_map()
+    columns  = controller.get_frame(Page2).get_columns()
+
+    for i in range(len(cell_map[len(cell_map)-1])):
+        if cell_map[len(cell_map)-1][i]: 
+            cell_map[len(cell_map)-1][i].place(x=None, y=None)
+            cell_map[len(cell_map)-1][i].update()
+    
+    initial_column_length = len(columns)
+
+    for i in range(initial_column_length):
+        end_array = initial_column_length - i - 1
+        columns[end_array].destroy()
+        columns.pop()
+
+class Page4(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg=BACKGROUND_COLOR)
+
+        #-----STYLE----#
         
-    all_cell_text = all_cell_text[:-1]
+        style = ttk.Style()
+        style.configure('TLabelframe', background= SECONDARY_COLOR)
+        style.configure('TLabelframe.Label', font =('Calibri', 15, 'bold'))
+        style.configure('TLabelframe.Label', foreground = "White")
+        style.configure('TLabelframe.Label', background = SECONDARY_COLOR )
 
-    cell_list.configure(text=all_cell_text)
-    
-    source_entry.delete(0, END)
-    
-    if (placement == 'source'):
-        cell_list.place(x= 10, y = 275)
-    
-    if (placement == 'destin'):
-        cell_list.place(x =350, y =275)
+        style.configure('TButton', font = ('Calibri', 15))
+        style.configure('TButton', background = "#4733BF", )
 
+        style.configure('TLabel', font = ('Calabri', 15))
+        style.configure('TLabel', foreground = 'White')
+        style.configure('TLabel', background = SECONDARY_COLOR)
 
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
 
+        self.loading = Label(self, text = "Loading .", font=('Calabri', 24), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
+        self.loading.place(x=500, y = 700/2)
 
-class VerticalScrolledFrame(ttk.Frame):
-    """A pure Tkinter scrollable frame that actually works!
-    * Use the 'interior' attribute to place widgets inside the scrollable frame.
-    * Construct and pack/place/grid normally.
-    * This frame only allows vertical scrolling.
-    """
-    def __init__(self, parent, *args, **kw):
-        ttk.Frame.__init__(self, parent, *args, **kw)
-
-        # Create a canvas object and a vertical scrollbar for scrolling it.
-        vscrollbar = ttk.Scrollbar(self, orient=VERTICAL)
-        vscrollbar.pack(fill=Y, side=RIGHT, expand=FALSE)
-        canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                           yscrollcommand=vscrollbar.set)
-        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-        vscrollbar.config(command=canvas.yview)
-
-        # Reset the view
-        canvas.xview_moveto(0)
-        canvas.yview_moveto(0)
-
-app = tkinterApp()
-app.mainloop()
+    def get_loading_label(self):
+        return self.loading
+       
+if __name__=="__main__":
+    app = tkinterApp()
+    app.mainloop()
 

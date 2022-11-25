@@ -3,13 +3,14 @@
 
 #--------LIBRARIES--------#
 
+import sys
+sys.path.append('./')
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from zlib import Z_FIXED
 from PIL import ImageTk, Image
 from tkinter import filedialog
-from operator import concat, methodcaller
 from ttkthemes import ThemedStyle
 from building_blocks import *
 
@@ -137,7 +138,7 @@ class setup():
         #-------TITLE BAR-------#
 
         # Title bar image created with powerpoint
-        self.img = ImageTk.PhotoImage(Image.open("C:/Users/ssira/Documents/Python Scripts/Title Bar2.png"))
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
         # Use a label to place the image
         self.label = ttk.Label(image=self.img)
         self.label.image = self.img
