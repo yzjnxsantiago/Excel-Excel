@@ -23,9 +23,10 @@ from excel_to_excel import excel_excel
 import threading
 import time
 
-alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']
+alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+            'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI']
 
-def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame):
+def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame, controller):
     
     """_summary_ 
 
@@ -37,16 +38,17 @@ def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame):
     
     files_list = [] 
     source_sheets = []
-    sheet_graphics = []
-    sheet_variable = []
+    sheet_variable = controller.get_frame(Page1).get_sheet_variables()[0]
+    text_sheet_variable = controller.get_frame(Page1).get_sheet_variables()[1]
+    sheet_graphics = controller.get_frame(Page1).get_sheet_variables()[2]
 
     x1 = 275
     x2 = 275
-    y1 = 85+20
+    y1 = 160 + 85+20
     y2 = y1 + 40
 
     placement_x = 290
-    placement_y = 75
+    placement_y = 150 + 80
 
     filename = filedialog.askdirectory()
     directory_label.set(filename)
@@ -61,10 +63,12 @@ def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame):
     source_sheets = id_sheets(filename)
 
     for i in range(len(source_sheets)):
-            sheet_variable.append(StringVar())
-            sheet_graphics.append(Checkbutton(sheet_frame, text=source_sheets[i]+ " ", variable=sheet_variable[i], font= ('Calabri', 10),
+            sheet_variable.append(IntVar())
+            text_sheet_variable.append(StringVar())
+            sheet_graphics.append(Checkbutton(sheet_frame, variable=sheet_variable[i], textvariable= text_sheet_variable[i], font= ('Calabri', 10),
                                   background=BUTTON_HIGHLIGHT, foreground='white',  borderwidth = 1, relief="ridge",  height=2,
                                   activebackground=BUTTON_COLOR, activeforeground='White', selectcolor= BACKGROUND_COLOR ))
+            text_sheet_variable[i].set(source_sheets[i])
             sheet_graphics[i].place(x = placement_x, y = placement_y)
             sheet_graphics[i].update()
             sheet_graphics_width = sheet_graphics[i].winfo_width()
@@ -107,8 +111,9 @@ class tkinterApp(tk.Tk):
   
         # iterating through a tuple consisting
         # of the different page layouts
-        for F in (StartPage, Page1, Page2, Page3, Page4):
-  
+        for F in (StartPage, Page1, Page2, Page3, Page4, SheetValidation):
+            
+            
             frame = F(container, self)
   
             # initializing frame of that object from
@@ -117,6 +122,7 @@ class tkinterApp(tk.Tk):
             self.frames[F] = frame
   
             frame.grid(row = 0, column = 0, sticky ="nsew")
+            
   
         self.show_frame(StartPage)  
   
@@ -152,17 +158,19 @@ class StartPage(tk.Frame):
         style.configure('TButton', background = "#4733BF", )
 
         
-        #-------MENU BAR-------#
+        #------TITLE BAR------#
+
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
         
-        menu_bar = ttk.LabelFrame(self, text= "Explorer", height=698, width=250) 
-        menu_bar.place(x = 0, y =0)
-
-        #-Buttons-#
-
-        create = Button(self, text ="Create", font=('Calibri', 15), fg= "white", bg="#5615DE", activebackground='#6017F9',
-                            activeforeground='white',
+        create = Button(self, text ="+", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9',
+                            activeforeground='white', width = 4,
                             command = lambda : controller.show_frame(Page1))
-        create.place(x = 300, y = 20)
+        create.place(x = 525, y = 700/2)
 
 class Page1(tk.Frame):
      
@@ -190,35 +198,42 @@ class Page1(tk.Frame):
         style.configure('TLabel', foreground = 'White')
         style.configure('TLabel', background = SECONDARY_COLOR)
 
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
         
         #-------MENU BAR-------#
         
-        menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
-        menu_bar.place(x = 0, y =0) 
+        menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
+        self.label.update()
+        menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
         #-Buttons-#
         
         nav_source = Button(self, text="Source Directory Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
                             activebackground=BUTTON_COLOR , activeforeground="White",  
                             command = lambda: controller.show_frame(Page1))
-        nav_source.place(x = 20 , y =30)
+        nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
       
         #-----BROWSE FRAME-----#
         
         browse_frame = ttk.LabelFrame(self, text='Source', height = 100, width = 900)
-        browse_frame.place(x = 275, y = 10)
+        browse_frame.place(x = 275, y = self.label.winfo_height() + 10)
 
         #-Buttons-#
 
         browse_source  = ttk.Button(self, text="Browse Files", 
-                            command= lambda : browse_button(self.directorystr, self, controller.get_frame(Page2)))
-        browse_source.place(x = 290, y = 35 )
+                            command= lambda : browse_button(self.directorystr, self, controller.get_frame(Page2), controller))
+        browse_source.place(x = 290, y = self.label.winfo_height() + 35 )
         
         #-Labels-#
 
         self.directorystr = StringVar()
         source_directory = ttk.Label(self, textvariable=self.directorystr)
-        source_directory.place(x = 420, y = 40)
+        source_directory.place(x = 420, y = self.label.winfo_height() + 40)
 
         #------MAIN SECTION------#
         #-Buttons-#
@@ -229,7 +244,7 @@ class Page1(tk.Frame):
         #-Labels-#
 
         files = ttk.Label(self, text=' Source Files ', font=('Calabri', 12), borderwidth=2, relief="groove")
-        files.place(x=275, y =115)
+        files.place(x=275, y =self.label.winfo_height() + 115)
 
         #-----DESTINATION SECTION-----#
 
@@ -246,18 +261,26 @@ class Page1(tk.Frame):
         destination_directory = ttk.Label(self, textvariable=self.directory_des, font = ('Calabri', 12))
         destination_directory.place(x = 420, y = 572)
 
+        #----------VARIABLES-----------#
+        
+        self.sheet_variable = []
+        self.text_sheet_variable = []
+        self.sheet_checkboxes = []
+
+    def get_sheet_variables(self):
+        return [self.sheet_variable, self.text_sheet_variable, self.sheet_checkboxes]
+
     def get_directories(self):
         return [self.directorystr, self.directory_des]
 
 def listBox(frame, x1, y1, x2, y2, filename):
 
-    if y2 > 605/1.5:
+    if y2 > 605/1.25:
         return
 
     label = ttk.Label(frame, text=filename, font= ('Calabri', 10), borderwidth=2, relief="solid", width= 128)
     label.place(x = x2, y = y2)
   
-# third window frame page2
 class Page2(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -278,41 +301,51 @@ class Page2(tk.Frame):
         style.configure('TLabel', foreground = 'White')
         style.configure('TLabel', background = SECONDARY_COLOR)
 
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
         
         #-------MENU BAR-------#
         
-        menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
-        menu_bar.place(x = 0, y =0)
+        menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
+        self.label.update()
+        menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
-
         #-Buttons-#
         
-        nav_source = Button(self, text="Source Directory Selection", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", activebackground=BUTTON_COLOR , activeforeground="White",  
+        nav_source = Button(self, text="Source Directory Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White",  
                             command = lambda: controller.show_frame(Page1))
-        nav_source.place(x = 20 , y =30)
+        nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
+      
 
         #-------SHEET SELECTION-----#
 
         sheet_selection = ttk.LabelFrame(self, text='Sheet Selection', height = 250, width = 900)
-        sheet_selection.place(x = 275, y = 20)
+        sheet_selection.place(x = 275, y = self.label.winfo_height() + 20)
 
         #------MAIN SECTION-------#
 
         type_a = Button(self, text="Sheet Validation", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
                         background= BUTTON_HIGHLIGHT, foreground='White', activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2",
+                        command = lambda: controller.show_frame(SheetValidation)
                         )
-        type_a.place(x=275, y = 300)
+        type_a.place(x=275, y = self.label.winfo_height() + 300)
 
         type_b = Button(self, text="Cell to Column", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
                         background= BUTTON_HIGHLIGHT, foreground='White', activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2",
                         command= lambda: [controller.show_frame(Page3), create_columns(controller.get_frame(Page3), self.columns, self.cell_map, controller)] 
                         )
-        type_b.place(x=275+200, y = 300)
+        type_b.place(x=275+200, y = self.label.winfo_height() + 300)
 
         finish = Button(self, text="Finish", font= ('Calabri', 17), borderwidth=1, relief="ridge", width=8,       
                         background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
                         command = lambda: [controller.show_frame(Page4), threading.Thread(target = excel_excel, args=[controller.get_frame(Page1), controller.get_frame(Page2),
-                                                                                                                       controller.get_frame(Page3), controller.get_frame(Page4)]).start()
+                                                                                                                       controller.get_frame(Page3), controller.get_frame(Page4),
+                                                                                                                      controller.get_frame(SheetValidation)]).start()
                                                                                      ]
                         )
         finish.place(x = 1070, y = 645)
@@ -321,6 +354,7 @@ class Page2(tk.Frame):
         self.click_count = []
         self.cell_map = []
         self.sheet_map = []
+        self.disabled_checkboxes = set()
 
     def get_columns(self):
         return self.columns
@@ -328,8 +362,14 @@ class Page2(tk.Frame):
     def get_map(self):
         return self.cell_map
 
+    def get_sheet_map(self):
+        return self.sheet_map
+
     def get_click_count(self):
         return self.click_count
+
+    def get_disabled_checkboxes(self):
+        return self.disabled_checkboxes
 
 class Page3(tk.Frame):
     def __init__(self, parent, controller):
@@ -351,39 +391,47 @@ class Page3(tk.Frame):
         style.configure('TLabel', foreground = 'White')
         style.configure('TLabel', background = SECONDARY_COLOR)
         
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
         
         #-------MENU BAR-------#
         
-        menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
-        menu_bar.place(x = 0, y =0)
+        menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
+        self.label.update()
+        menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
         #-Buttons-#
         
-        nav_source = Button(self, text="Source Directory Selection", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", activebackground=BUTTON_COLOR , activeforeground="White",  
+        nav_source = Button(self, text="Source Directory Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White",  
                             command = lambda: controller.show_frame(Page1))
-        nav_source.place(x = 20 , y =30)
+        nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
 
         #-------CELL SELECTION-------#
 
         sheet_selection = ttk.LabelFrame(self, text='Cell Selection', height = 90, width = 170)
-        sheet_selection.place(x = 275, y = 20)
+        sheet_selection.place(x = 275, y = self.label.winfo_height() + 20)
 
         source_cell = Entry(self, bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR, width= 5)
-        source_cell.place(x = 290, y = 60)
+        source_cell.place(x = 290, y = self.label.winfo_height() + 60)
 
         cell_count = [0]
 
         confirm_cell = Button(self,text="Confirm Cell", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
                               activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command= lambda: add_cells(self, self.cells, cell_count, controller, source_cell)
                               )
-        confirm_cell.place(x= 336, y = 58)
+        confirm_cell.place(x= 336, y = self.label.winfo_height() + 58)
 
         #------CELL------#
 
         self.cells = []
 
         cell_frame = ttk.LabelFrame(self, text='Cell', height = 90, width = 90)
-        cell_frame.place(x = 450, y = 20)
+        cell_frame.place(x = 450, y = self.label.winfo_height() + 20)
 
         #-----FINISH-----#
 
@@ -395,7 +443,14 @@ class Page3(tk.Frame):
 
 def create_columns(frame, columns, cell_map, controller):
 
+    sheet_map = controller.get_frame(Page2).get_sheet_map()
+    sheet_variables = controller.get_frame(Page1).get_sheet_variables()[0]
+    text_sheet_variable =  controller.get_frame(Page1).get_sheet_variables()[1]
+    sheet_checkboxes = controller.get_frame(Page1).get_sheet_variables()[2]
+    disabled_checkboxes = controller.get_frame(Page2).get_disabled_checkboxes()
+
     cell_map.append([])
+    sheet_map.append([])
 
     column_x = 350
     column_y = 300
@@ -414,6 +469,14 @@ def create_columns(frame, columns, cell_map, controller):
         column_x += columns[i].winfo_width() + 10
         cell_map[len(cell_map)-1].append(None)
         i += 1
+    
+    for i in range(len(sheet_variables)):
+        sheetisChecked = int(sheet_variables[i].get())
+        if sheetisChecked == 1 and not str(text_sheet_variable[i].get()) in disabled_checkboxes:
+            sheet_map[len(cell_map)-1].append(str(text_sheet_variable[i].get()))
+            disabled_checkboxes.add(str(text_sheet_variable[i].get()))
+            sheet_checkboxes[i].configure(state='disabled')
+            
     
     column_x1_last = column_x
     column_y1_last = column_y
@@ -515,7 +578,7 @@ def add_cells(frame, cells, cell_count, controller, cell_entry):
 
     current_cell = cells[cell_count[0]]
     
-    current_cell.place(x=475, y=50)
+    current_cell.place(x=475, y= 205)
 
     current_cell.lift()
 
@@ -575,6 +638,70 @@ def clear_page(frame: Frame, controller):
         end_array = initial_column_length - i - 1
         columns[end_array].destroy()
         columns.pop()
+
+class SheetValidation(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.configure(bg=BACKGROUND_COLOR)
+
+        #-----STYLE----#
+        
+        style = ttk.Style()
+        style.configure('TLabelframe', background= SECONDARY_COLOR)
+        style.configure('TLabelframe.Label', font =('Calibri', 15, 'bold'))
+        style.configure('TLabelframe.Label', foreground = "White")
+        style.configure('TLabelframe.Label', background = SECONDARY_COLOR )
+
+        style.configure('TButton', font = ('Calibri', 15))
+        style.configure('TButton', background = "#4733BF", )
+
+        style.configure('TLabel', font = ('Calabri', 15))
+        style.configure('TLabel', foreground = 'White')
+        style.configure('TLabel', background = SECONDARY_COLOR)
+
+        #-------MENU BAR-------#
+        
+        menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
+        menu_bar.place(x = 10, y =0)
+        
+        #-Buttons-#
+        
+        nav_source = Button(self, text="Source Directory Selection", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", activebackground=BUTTON_COLOR , activeforeground="White",  
+                            command = lambda: controller.show_frame(Page1))
+        nav_source.place(x = 20 , y =30)
+        
+        self.keyword_text = StringVar()
+
+        keyword = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.keyword_text)
+        keyword.place(x =450-50, y = 27)
+
+        keyword_lbl = ttk.Label(self, text='Keyword: ')
+        keyword_lbl.place(x = 330-50, y = 25)
+
+        self.keyword_lbl_text = StringVar()
+
+        keyword_cells = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.keyword_lbl_text)
+        keyword_cells.place(x=450-50, y = 27+25)
+
+        keyword_cells_lbl = ttk.Label(self, text='Cells: ')
+        keyword_cells_lbl.place(x = 490, y = 25)
+
+        self.reference_text = StringVar()
+
+        reference = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.reference_text)
+        reference.place(x=550, y = 27)
+
+        reference_lbl = ttk.Label(self, text='Reference: ')
+        reference_lbl.place(x = 330-50, y = 25+25)
+
+        finish = Button(self, text="Next", font= ('Calabri', 17), borderwidth=1, relief="ridge",     
+                        background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
+                        command= lambda: [controller.show_frame(Page2), ]
+                        )
+        finish.place(x = 1045, y = 645)
+
+    def get_validation(self):
+        return [self.keyword_text, self.keyword_lbl_text, self.reference_text]
 
 class Page4(tk.Frame):
     def __init__(self, parent, controller):
