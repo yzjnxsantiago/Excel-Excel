@@ -21,7 +21,6 @@ from tkinter import filedialog
 from building_blocks import *
 from excel_to_excel import excel_excel
 import threading
-import time
 
 alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
             'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI']
@@ -29,18 +28,22 @@ alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'
 def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame, controller):
     
     """_summary_ 
+    This function is intended to let the user select a directory so that has
+    simillarly formatted excel files
 
     Args:
         directory_label (Label): _description_
         frame (Frame): _description_
         sheet_frame (Frame): _description_
     """
-    
+
     files_list = [] 
     source_sheets = []
     sheet_variable = controller.get_frame(Page1).get_sheet_variables()[0]
     text_sheet_variable = controller.get_frame(Page1).get_sheet_variables()[1]
     sheet_graphics = controller.get_frame(Page1).get_sheet_variables()[2]
+
+    # Initial Placements
 
     x1 = 275
     x2 = 275
@@ -50,35 +53,42 @@ def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame, cont
     placement_x = 290
     placement_y = 150 + 80
 
+    
+    # Prompt the user for a directory 
     filename = filedialog.askdirectory()
     directory_label.set(filename)
 
-    files_list = find_files(".xlsx", filename)
+    files_list = find_files(".xlsx", filename) # List of excel files in the 'filename' directory 
 
+    # Iterate through the file list, create a label for each file in the list and shift the positioning by 25 pixels down
     for i in range(len(files_list)):
         listBox(frame, x1,y1,x2,y2,files_list[i])
         y1 += 25
         y2 += 25
 
-    source_sheets = id_sheets(filename)
+    source_sheets = id_sheets(filename) # List of sheet names in the first file of the directory
 
+    # Create a checkbox for each sheet in the excel file
     for i in range(len(source_sheets)):
-            sheet_variable.append(IntVar())
-            text_sheet_variable.append(StringVar())
+            sheet_variable.append(IntVar()) # Initializing checkbox check var
+            text_sheet_variable.append(StringVar()) # Initializing checkbox text var
+            # Create a checkbox object and store in an array
             sheet_graphics.append(Checkbutton(sheet_frame, variable=sheet_variable[i], textvariable= text_sheet_variable[i], font= ('Calabri', 10),
                                   background=BUTTON_HIGHLIGHT, foreground='white',  borderwidth = 1, relief="ridge",  height=2,
-                                  activebackground=BUTTON_COLOR, activeforeground='White', selectcolor= BACKGROUND_COLOR ))
-            text_sheet_variable[i].set(source_sheets[i])
-            sheet_graphics[i].place(x = placement_x, y = placement_y)
-            sheet_graphics[i].update()
-            sheet_graphics_width = sheet_graphics[i].winfo_width()
-            placement_x = placement_x +  sheet_graphics_width + 15
+                                  activebackground=BUTTON_COLOR, activeforeground='White', selectcolor= BACKGROUND_COLOR )) 
+            text_sheet_variable[i].set(source_sheets[i]) # Set the text variable
+            sheet_graphics[i].place(x = placement_x, y = placement_y) # Place the checkbox
+            sheet_graphics[i].update() # Update the gui so width can be obtained
+            sheet_graphics_width = sheet_graphics[i].winfo_width() 
+            placement_x = placement_x +  sheet_graphics_width + 15 # Place the checkbox object relative to the previous checkbox
             
-            if placement_x > 1000:
+            # Horizontal limit for the checkboxes before shifting it down
+            if placement_x > 1000: 
                 placement_x = 290
                 placement_y += 50
 
 def browse_button_end(directory_label):
+    # Get the excel file for the destination 
     filename = filedialog.askopenfilename(title = "Select a File",
                                           filetypes = (("Excel files",
                                                         "*.xlsx*"),
@@ -100,21 +110,21 @@ class tkinterApp(tk.Tk):
         
          
         # creating a container
-        container = tk.Frame(self) 
-        container.pack(side = "top", fill = "both", expand = True)
+        self.container = tk.Frame(self) 
+        self.container.pack(side = "top", fill = "both", expand = True)
   
-        container.grid_rowconfigure(0, weight = 1)
-        container.grid_columnconfigure(0, weight = 1)
+        self.container.grid_rowconfigure(0, weight = 1)
+        self.container.grid_columnconfigure(0, weight = 1)
   
         # initializing frames to an empty array
         self.frames = {} 
-  
+
         # iterating through a tuple consisting
         # of the different page layouts
         for F in (StartPage, Page1, Page2, Page3, Page4, SheetValidation):
             
             
-            frame = F(container, self)
+            frame = F(self.container, self)
   
             # initializing frame of that object from
             # startpage, page1, page2 respectively with
@@ -129,11 +139,25 @@ class tkinterApp(tk.Tk):
     # to display the current frame passed as
     # parameter
     def show_frame(self, cont):
+        x = self.frames
         frame = self.frames[cont]
         frame.tkraise()
 
     def get_frame(self, cont):
         return self.frames[cont]
+
+    def add_frame(self, new_frame):
+        frames_len = len(self.frames)
+        new_frame.grid(row = 0, column = 0, sticky ="nsew")
+        self.frames["frame" + str(frames_len)] = new_frame
+        pass
+    
+    def get_container(self):
+        x = self.container , self
+        return self.container , self
+
+    def get_frames_len(self):
+        return len(self.frames)
 
 class StartPage(tk.Frame):
 
@@ -166,7 +190,7 @@ class StartPage(tk.Frame):
         self.label.image = self.img
         # Place the image at the top left of the screen
         self.label.place(x=0,y=0)
-        
+        # Button for creating a new page
         create = Button(self, text ="+", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9',
                             activeforeground='white', width = 4,
                             command = lambda : controller.show_frame(Page1))
@@ -209,6 +233,7 @@ class Page1(tk.Frame):
         
         menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
         self.label.update()
+        controller.show_frame(StartPage)
         menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
         #-Buttons-#
@@ -217,6 +242,11 @@ class Page1(tk.Frame):
                             activebackground=BUTTON_COLOR , activeforeground="White",  
                             command = lambda: controller.show_frame(Page1))
         nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
+
+        nav_sel_sheet = Button(self, text="Sheet Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White", width= 20, 
+                            command = lambda: controller.show_frame(Page2))
+        nav_sel_sheet.place(x = 20 , y = self.label.winfo_height() + 80)      
       
         #-----BROWSE FRAME-----#
         
@@ -275,6 +305,7 @@ class Page1(tk.Frame):
 
 def listBox(frame, x1, y1, x2, y2, filename):
 
+    # Limit for the listBox
     if y2 > 605/1.25:
         return
 
@@ -312,7 +343,13 @@ class Page2(tk.Frame):
         
         menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
         self.label.update()
-        menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
+        controller.show_frame(StartPage)
+        menu_bar.place(x = 10, y = self.label.winfo_height() + 10)
+
+        nav_sel_sheet = Button(self, text="Sheet Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White", width= 20, 
+                            command = lambda: controller.show_frame(Page2))
+        nav_sel_sheet.place(x = 20 , y = self.label.winfo_height() + 80) 
         
         #-Buttons-#
         
@@ -337,7 +374,9 @@ class Page2(tk.Frame):
 
         type_b = Button(self, text="Cell to Column", font= ('Calabri', 15), borderwidth=1, relief="ridge", width= 15, height = 5, 
                         background= BUTTON_HIGHLIGHT, foreground='White', activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2",
-                        command= lambda: [controller.show_frame(Page3), create_columns(controller.get_frame(Page3), self.columns, self.cell_map, controller)] 
+                        command= lambda: [controller.add_frame(Page3(controller.get_container()[0], controller.get_container()[1])), 
+                        create_columns(controller.get_frame("frame" + str(controller.get_frames_len() - 1)), self.columns, self.cell_map, controller),
+                        controller.show_frame("frame" + str(controller.get_frames_len() - 1))] 
                         )
         type_b.place(x=275+200, y = self.label.winfo_height() + 300)
 
@@ -411,6 +450,11 @@ class Page3(tk.Frame):
                             command = lambda: controller.show_frame(Page1))
         nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
 
+        nav_sel_sheet = Button(self, text="Sheet Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White", width= 20, 
+                            command = lambda: controller.show_frame(Page2))
+        nav_sel_sheet.place(x = 20 , y = self.label.winfo_height() + 80)
+
         #-------CELL SELECTION-------#
 
         sheet_selection = ttk.LabelFrame(self, text='Cell Selection', height = 90, width = 170)
@@ -437,9 +481,11 @@ class Page3(tk.Frame):
 
         finish = Button(self, text="Next Sheets", font= ('Calabri', 17), borderwidth=1, relief="ridge",     
                         background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
-                        command= lambda: [controller.show_frame(Page2) , clear_page(self, controller)]
+                        command= lambda: [controller.show_frame(Page2) , '''clear_page(self, controller)''']
                         )
         finish.place(x = 1045, y = 645)
+
+#---------Page3 FUNCTIONS----------#
 
 def create_columns(frame, columns, cell_map, controller):
 
@@ -451,6 +497,7 @@ def create_columns(frame, columns, cell_map, controller):
 
     cell_map.append([])
     sheet_map.append([])
+    columns.append([])
 
     column_x = 350
     column_y = 300
@@ -463,10 +510,10 @@ def create_columns(frame, columns, cell_map, controller):
     i = 0
 
     while column_x < 1000:
-        columns.append(ttk.LabelFrame(frame, text=alphabet[i], height = 90, width = 90))
-        columns[i].place(x = column_x, y = column_y)
-        columns[i].update()
-        column_x += columns[i].winfo_width() + 10
+        columns[len(cell_map)-1].append(ttk.LabelFrame(frame, text=alphabet[i], height = 90, width = 90))
+        columns[len(cell_map)-1][i].place(x = column_x, y = column_y)
+        columns[len(cell_map)-1][i].update()
+        column_x += columns[len(cell_map)-1][i].winfo_width() + 10
         cell_map[len(cell_map)-1].append(None)
         i += 1
     
@@ -499,25 +546,25 @@ def create_columns(frame, columns, cell_map, controller):
 def shift_columns_left(frame, columns, click_count, left_button, controller):
 
     cell_map = controller.get_frame(Page2).get_map()
-    columns[click_count[0]].pack_forget()
-    first_column_x1 = columns[0].winfo_x()
-    first_column_y1 = columns[0].winfo_y()
+    columns[len(cell_map)-1][click_count[0]].pack_forget()
+    first_column_x1 = columns[len(cell_map)-1][0].winfo_x()
+    first_column_y1 = columns[len(cell_map)-1][0].winfo_y()
 
     first_loop = True
 
-    for i in range(click_count[0], len(columns)):
-        if i + 1 < len(columns):
-            columns[i+1].place(x = first_column_x1, y = first_column_y1)
+    for i in range(click_count[0], len(columns[len(cell_map)-1])):
+        if i + 1 < len(columns[len(cell_map)-1]):
+            columns[len(cell_map)-1][i+1].place(x = first_column_x1, y = first_column_y1)
             if cell_map[len(cell_map)-1][i+1]:
                 if i + 1 != click_count[0]:
                     cell_map[len(cell_map)-1][i+1].place(x = first_column_x1 + 30, y = first_column_y1 + 30)
             elif first_loop and cell_map[len(cell_map)-1][i]:
                     cell_map[len(cell_map)-1][i].lower()
-            first_column_x1 += columns[i].winfo_width() + 10
+            first_column_x1 += columns[len(cell_map)-1][i].winfo_width() + 10
         else:
-            columns.append(ttk.LabelFrame(frame, text=alphabet[i+1], height = 90, width = 90))
+            columns[len(cell_map)-1].append(ttk.LabelFrame(frame, text=alphabet[i+1], height = 90, width = 90))
             cell_map[len(cell_map)-1].append(None)      
-            columns[i+1].place(x = first_column_x1, y = first_column_y1)
+            columns[len(cell_map)-1][i+1].place(x = first_column_x1, y = first_column_y1)
             if cell_map[len(cell_map)-1][i+1]:
                 cell_map[len(cell_map)-1][i+1].lift()
         
@@ -531,28 +578,28 @@ def shift_columns_right(frame, columns, click_count, left_button, controller):
 
     cell_map = controller.get_frame(Page2).get_map()
 
-    columns_length = len(columns)
+    columns_length = len(columns[len(cell_map)-1])
 
-    last_column_x1 = columns[columns_length-1].winfo_x()
-    last_column_y1 = columns[columns_length-1].winfo_y()
+    last_column_x1 = columns[len(cell_map)-1][columns_length-1].winfo_x()
+    last_column_y1 = columns[len(cell_map)-1][columns_length-1].winfo_y()
 
-    rightmost_column = columns[len(columns)-1]
+    rightmost_column = columns[len(cell_map)-1][len(columns[len(cell_map)-1])-1]
     rightmost_column.destroy()
     
-    columns.pop()
+    columns[len(cell_map)-1].pop()
 
-    columns_length = len(columns)
+    columns_length = len(columns[len(cell_map)-1])
 
     first_loop = True
     
     for i in range(columns_length):
         if columns_length - i - 1 > click_count[0] - 1:
-            columns[columns_length - i - 1].place(x = last_column_x1, y = last_column_y1)
+            columns[len(cell_map)-1][columns_length - i - 1].place(x = last_column_x1, y = last_column_y1)
             if cell_map[len(cell_map)-1][columns_length - i -1]:
                 cell_map[len(cell_map)-1][columns_length - i - 1].place(x = last_column_x1 + 30, y = last_column_y1 + 30)
             elif first_loop and cell_map[len(cell_map)-1][columns_length- i]:
                 cell_map[len(cell_map)-1][columns_length-i].lower()
-            last_column_x1 -= columns[columns_length - i- 1].winfo_width() + 10
+            last_column_x1 -= columns[len(cell_map)-1][columns_length - i- 1].winfo_width() + 10
         elif columns_length - i - 1 == click_count[0] - 1:
             if cell_map[len(cell_map)-1][columns_length - i - 1]:
                  cell_map[len(cell_map)-1][columns_length- i - 1].lift()
@@ -582,6 +629,8 @@ def add_cells(frame, cells, cell_count, controller, cell_entry):
 
     current_cell.lift()
 
+    cell_frame_index = len(cell_map)-1
+
     def drag_start(event):
         widget = event.widget
         widget.startX = event.x
@@ -600,12 +649,12 @@ def add_cells(frame, cells, cell_count, controller, cell_entry):
         y = widget.winfo_y()
         frame = controller.get_frame(Page2)
         columns = frame.get_columns()
-
-        for i in range(click_count[0], len(columns)):
-            column_x1 = columns[i].winfo_x()
-            column_x2 = column_x1 + columns[i].winfo_width()
-            column_y1 = columns[i].winfo_y()
-            column_y2 = column_y1 + columns[i].winfo_height()
+        
+        for i in range(click_count[0], len(columns[cell_frame_index])):
+            column_x1 = columns[cell_frame_index][i].winfo_x()
+            column_x2 = column_x1 + columns[cell_frame_index][i].winfo_width()
+            column_y1 = columns[cell_frame_index][i].winfo_y()
+            column_y2 = column_y1 + columns[cell_frame_index][i].winfo_height()
             if x > column_x1 and x < column_x2 and y > column_y1 and y < column_y2:
                 widget.place(x=column_x1+ ((column_x2-column_x1)/3.25) , y = column_y1 + ((column_y2-column_y1)/3.25))
                 for j in range(len(cell_map[len(cell_map)-1])):
@@ -638,6 +687,8 @@ def clear_page(frame: Frame, controller):
         end_array = initial_column_length - i - 1
         columns[end_array].destroy()
         columns.pop()
+
+#----------------------------------#
 
 class SheetValidation(tk.Frame):
     def __init__(self, parent, controller):
@@ -736,7 +787,7 @@ class Page4(tk.Frame):
     def get_loading_label(self):
         return self.loading
        
-if __name__=="__main__":
+if __name__ == "__main__":
     app = tkinterApp()
     app.mainloop()
 
