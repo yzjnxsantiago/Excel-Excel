@@ -31,10 +31,6 @@ def browse_button(directory_label: Label, frame: Frame, sheet_frame: Frame, cont
     This function is intended to let the user select a directory so that has
     simillarly formatted excel files
 
-    Args:
-        directory_label (Label): _description_
-        frame (Frame): _description_
-        sheet_frame (Frame): _description_
     """
 
     files_list = [] 
@@ -308,8 +304,8 @@ def listBox(frame, x1, y1, x2, y2, filename):
     # Limit for the listBox
     if y2 > 605/1.25:
         return
-
-    label = ttk.Label(frame, text=filename, font= ('Calabri', 10), borderwidth=2, relief="solid", width= 128)
+ 
+    label = ttk.Label(frame, text=filename, font= ('Calabri', 10), borderwidth=2, relief="solid", width= 128) # Create a label
     label.place(x = x2, y = y2)
   
 class Page2(tk.Frame):
@@ -489,71 +485,72 @@ class Page3(tk.Frame):
 
 def create_columns(frame, columns, cell_map, controller):
 
-    sheet_map = controller.get_frame(Page2).get_sheet_map()
-    sheet_variables = controller.get_frame(Page1).get_sheet_variables()[0]
-    text_sheet_variable =  controller.get_frame(Page1).get_sheet_variables()[1]
-    sheet_checkboxes = controller.get_frame(Page1).get_sheet_variables()[2]
-    disabled_checkboxes = controller.get_frame(Page2).get_disabled_checkboxes()
+    sheet_map = controller.get_frame(Page2).get_sheet_map() # 2D array storing the sheets used for a cell creation
+    sheet_variables = controller.get_frame(Page1).get_sheet_variables()[0] # Sheet variables are needed to disable them
+    text_sheet_variable =  controller.get_frame(Page1).get_sheet_variables()[1] 
+    sheet_checkboxes = controller.get_frame(Page1).get_sheet_variables()[2] # Sheet checkboxes needed to disable them
+    disabled_checkboxes = controller.get_frame(Page2).get_disabled_checkboxes() # List of disabled checkboxes
 
-    cell_map.append([])
-    sheet_map.append([])
-    columns.append([])
+    cell_map.append([]) # Everytime a new Page3 is loaded another array has to be made within the 2D cell_map
+    sheet_map.append([]) # Same for sheet map
+    columns.append([]) # Same for columns
 
-    column_x = 350
-    column_y = 300
+    column_x = 350 # Initial x position for the columns
+    column_y = 300 # Initial y position for the columns
 
     column_x_start = column_x
     column_y_start = column_y
 
-    click_count = controller.get_frame(Page2).get_click_count()
+    click_count = controller.get_frame(Page2).get_click_count() # To check how many times the arrow keys have been clicked. Right arrow is +1 left is -1
 
-    i = 0
+    i = 0 
 
-    while column_x < 1000:
-        columns[len(cell_map)-1].append(ttk.LabelFrame(frame, text=alphabet[i], height = 90, width = 90))
-        columns[len(cell_map)-1][i].place(x = column_x, y = column_y)
-        columns[len(cell_map)-1][i].update()
-        column_x += columns[len(cell_map)-1][i].winfo_width() + 10
-        cell_map[len(cell_map)-1].append(None)
-        i += 1
+    while column_x < 1000: # Dont make any new columns after this position
+        columns[len(cell_map)-1].append(ttk.LabelFrame(frame, text=alphabet[i], height = 90, width = 90)) # Create a new label within the current cell map
+        columns[len(cell_map)-1][i].place(x = column_x, y = column_y) # Place the column
+        columns[len(cell_map)-1][i].update() # Update the column to get info on width
+        column_x += columns[len(cell_map)-1][i].winfo_width() + 10 # Increase the x position 
+        cell_map[len(cell_map)-1].append(None) # Initialize one empty column in the cell map
+        i += 1 
     
-    for i in range(len(sheet_variables)):
-        sheetisChecked = int(sheet_variables[i].get())
-        if sheetisChecked == 1 and not str(text_sheet_variable[i].get()) in disabled_checkboxes:
-            sheet_map[len(cell_map)-1].append(str(text_sheet_variable[i].get()))
-            disabled_checkboxes.add(str(text_sheet_variable[i].get()))
-            sheet_checkboxes[i].configure(state='disabled')
+    for i in range(len(sheet_variables)):  # Iterate through sheets
+        sheetisChecked = int(sheet_variables[i].get()) # Get the sheet
+        if sheetisChecked == 1 and not str(text_sheet_variable[i].get()) in disabled_checkboxes: # If the sheet is checked and is not disabled
+            sheet_map[len(cell_map)-1].append(str(text_sheet_variable[i].get())) # Store the sheets in the sheet map
+            disabled_checkboxes.add(str(text_sheet_variable[i].get())) # Add the checkboxes to the list of disabled_checkboxes
+            sheet_checkboxes[i].configure(state='disabled') #Disable the checkbox
             
     
-    column_x1_last = column_x
-    column_y1_last = column_y
+    column_x1_last = column_x # Store the last column x position
+    column_y1_last = column_y # Store the last column y position
 
     click_count.append(0) 
 
     right_button = Button(frame, text=">", font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
                       activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command = lambda: shift_columns_left(frame, columns, click_count, left_button,
-                      controller))
+                      controller)) # Create the right click button
     right_button.place(x = column_x1_last + 10, y = column_y1_last + 25)
 
     left_button = Button(frame, text="<", font =('Calabri', 15), borderwidth=1, relief="groove", background=BUTTON_HIGHLIGHT, foreground="White", 
                       activebackground=BUTTON_COLOR , activeforeground="White", cursor="hand2", command = lambda: shift_columns_right(frame, columns, click_count, left_button,
                       controller),
-                      state='disabled')
+                      state='disabled') # Left click button
     left_button.place(x = column_x_start - 40, y = column_y_start + 25)
 
     return columns
 
 def shift_columns_left(frame, columns, click_count, left_button, controller):
 
-    cell_map = controller.get_frame(Page2).get_map()
-    columns[len(cell_map)-1][click_count[0]].pack_forget()
-    first_column_x1 = columns[len(cell_map)-1][0].winfo_x()
-    first_column_y1 = columns[len(cell_map)-1][0].winfo_y()
+    cell_map = controller.get_frame(Page2).get_map() # Get the cell map
+    columns[len(cell_map)-1][click_count[0]].pack_forget() # Remove the right most column
+    first_column_x1 = columns[len(cell_map)-1][0].winfo_x() # x position of the first column
+    first_column_y1 = columns[len(cell_map)-1][0].winfo_y() # y position of the first column
 
-    first_loop = True
+    first_loop = True # First loop flag
 
-    for i in range(click_count[0], len(columns[len(cell_map)-1])):
-        if i + 1 < len(columns[len(cell_map)-1]):
+    # This code shifts columns and any cells that are in the columns to the left
+    for i in range(click_count[0], len(columns[len(cell_map)-1])): # Iterate through the columns
+        if i + 1 < len(columns[len(cell_map)-1]): 
             columns[len(cell_map)-1][i+1].place(x = first_column_x1, y = first_column_y1)
             if cell_map[len(cell_map)-1][i+1]:
                 if i + 1 != click_count[0]:
@@ -570,9 +567,9 @@ def shift_columns_left(frame, columns, click_count, left_button, controller):
         
         first_loop = False
 
-    click_count[0] += 1
+    click_count[0] += 1 # The click_count has moved once
 
-    left_button.configure(state="active")
+    left_button.configure(state="active") # Enable the left button since it is not longer 
 
 def shift_columns_right(frame, columns, click_count, left_button, controller):
 
