@@ -88,19 +88,21 @@ if __name__ == "__main__":
 
 def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: Frame):
     
-    error = False
+    error = False  # Error flag
 
-    isRunning = [True]
+    isRunning = [True] # Bool to check if excel_excel() is running
 
-    threading.Thread(target = loading, args=([Page1],[Page2],[Page3],[Page4], isRunning)).start()
+    threading.Thread(target = loading, args=([Page1],[Page2],[Page3],[Page4], isRunning)).start() # Animate a loading page while we wait for this program to finish
 
+    # Reference to each page
     directory_page        = Page1
     sheet_selection_page  = Page2
     cell_selection_page   = Page3
     loading_page          = Page4
     sheet_validation_page = Page5
     
-    workbook_paths            = directory_page.get_directories()
+    # Infomation from the GUI
+    workbook_paths            = directory_page.get_directories() 
 
     source_directory_path     = str(workbook_paths[0].get())
     source_workbook_paths     = find_files(".xlsx", source_directory_path)
@@ -117,14 +119,19 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
 
     completed_sheets          = set()
 
+
+    # Need to try opening the destination workbook
     try:
         destination_workbook      = xw.Book(destination_path)
     except FileNotFoundError:
         error = True
 
+    # If there is an error in the workbook then the program ends
     if not error:
 
-        destination_sheet         = destination_workbook.sheets["Sheet1"]
+        # A bunch of info from the GUI
+
+        destination_sheet         = destination_workbook.sheets["Sheet1"] 
     
         source_sheets             = sheet_selection_page.get_sheet_map()
 
@@ -136,12 +143,14 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
 
         destination_columns       = []
 
+        # Change the format of the cell_map so that the OG cells works with the organizing algortithm
         for i in range(len(cell_map)):
             source_cells.append([])
             for j in range(len(cell_map[i])):
                 if cell_map[i][j]:
                     source_cells[i].append(cell_map[i][j].cget('text'))
         
+        # Change the format of the cell_map so the the columns work with the organizing algorith
         for i in range(len(cell_map)):
             destination_columns.append([])
             for j in range(len(cell_map[i])):
@@ -184,19 +193,21 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
                 destination_workbook.save()
                 destination_workbook.close()
             except:
-                print("1 Error Added")
+                print("Error!")
                 pass
     else:
         print("Something Went Wrong")
     
-    isRunning[0] = False
+    isRunning[0] = False # With isRunning set to false, the loading thread will finish 
         
 def loading(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, isRunning: bool):
 
     loading_label = Page4[0].get_loading_label()
 
+    # Animate the final GUI page such that every 0.5 seconds Loading... text changes
+
     while isRunning[0]:
-        time.sleep(0.5)
+        time.sleep(0.5) 
         loading_label.config(text='Loading..')
         time.sleep(0.5)
         loading_label.config(text='Loading...')
@@ -204,13 +215,12 @@ def loading(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, isRunning: b
         loading_label.config(text='Loading.')
     
     loading_label.config(text='Done')
-    loading_label.place(x = 525, y = 700/2)
+    loading_label.place(x = 525, y = 700/2) # Place a done label when the program is no longer running
 
     save = Button(Page4[0], text="Save", font= ('Calabri', 17), borderwidth=1, relief="ridge",     
                         background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
 
                         )
-    save.place(x = 1145, y = 645)
-
+    save.place(x = 1145, y = 645) # Place a save button so that the user can save their work (in progress)
 
 
