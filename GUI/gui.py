@@ -437,6 +437,7 @@ class Page3(tk.Frame):
         
         menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
         self.label.update()
+        controller.show_frame(StartPage)
         menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
         #-Buttons-#
@@ -707,40 +708,59 @@ class SheetValidation(tk.Frame):
         style.configure('TLabel', foreground = 'White')
         style.configure('TLabel', background = SECONDARY_COLOR)
 
+         #------TITLE BAR------#
+
+        self.img = ImageTk.PhotoImage(Image.open("C:./Title Bar2.png"))
+        # Use a label to place the image
+        self.label = ttk.Label(self, image=self.img)
+        self.label.image = self.img
+        # Place the image at the top left of the screen
+        self.label.place(x=0,y=0)
+
         #-------MENU BAR-------#
         
-        menu_bar = ttk.LabelFrame(self, text= "Menu", height=698, width=250) 
-        menu_bar.place(x = 10, y =0)
+        menu_bar = ttk.LabelFrame(self, text= "Menu", height=475, width=250)
+        self.label.update()
+        controller.show_frame(StartPage)
+        menu_bar.place(x = 10, y = self.label.winfo_height() + 10) 
         
         #-Buttons-#
         
-        nav_source = Button(self, text="Source Directory Selection", borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", activebackground=BUTTON_COLOR , activeforeground="White",  
+        nav_source = Button(self, text="Source Directory Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White",  
                             command = lambda: controller.show_frame(Page1))
-        nav_source.place(x = 20 , y =30)
+        nav_source.place(x = 20 , y = self.label.winfo_height() + 40)
+
+        nav_sel_sheet = Button(self, text="Sheet Selection",borderwidth=1, relief="ridge", background=BUTTON_HIGHLIGHT, foreground="White", 
+                            activebackground=BUTTON_COLOR , activeforeground="White", width= 20, 
+                            command = lambda: controller.show_frame(Page2))
+        nav_sel_sheet.place(x = 20 , y = self.label.winfo_height() + 80)     
+
+        #--- FILL IN ---# 
         
         self.keyword_text = StringVar()
 
         keyword = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.keyword_text)
-        keyword.place(x =450-50, y = 27)
+        keyword.place(x =450-50, y = 27 + 200)
 
         keyword_lbl = ttk.Label(self, text='Keyword: ')
-        keyword_lbl.place(x = 330-50, y = 25)
+        keyword_lbl.place(x = 330-50, y = 25 + 200)
 
         self.keyword_lbl_text = StringVar()
 
         keyword_cells = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.keyword_lbl_text)
-        keyword_cells.place(x=450-50, y = 27+25)
+        keyword_cells.place(x=450-50, y = 27+25 + 200)
 
         keyword_cells_lbl = ttk.Label(self, text='Cells: ')
-        keyword_cells_lbl.place(x = 490, y = 25)
+        keyword_cells_lbl.place(x = 490, y = 25 + 200)
 
         self.reference_text = StringVar()
 
         reference = Entry(self, bg= "White", fg='Black', background='White', width= 10, textvariable=self.reference_text)
-        reference.place(x=550, y = 27)
+        reference.place(x=550, y = 27 + 200)
 
         reference_lbl = ttk.Label(self, text='Reference: ')
-        reference_lbl.place(x = 330-50, y = 25+25)
+        reference_lbl.place(x = 330-50, y = 25+25 + 200)
 
         finish = Button(self, text="Next", font= ('Calabri', 17), borderwidth=1, relief="ridge",     
                         background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2",
