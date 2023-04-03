@@ -8,7 +8,7 @@ alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'
 
 #-------LIBRARIES-------#
 import sys
-sys.path.append('./GUI')
+sys.path.append('./gui2.0')
 from ftplib import error_perm
 from importlib.metadata import files
 from msilib.schema import Class
@@ -16,7 +16,7 @@ from urllib import response
 import xlwings as xw
 from pywintypes import com_error
 from building_blocks import *
-from setup_gui import *
+#from setup_gui import *
 import threading
 import time
 
@@ -131,7 +131,7 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
 
         # A bunch of info from the GUI
 
-        destination_sheet         = destination_workbook.sheets["Sheet1"] 
+        destination_sheet         = destination_workbook.sheets["Basic Information & Faculty Adv"] 
     
         source_sheets             = sheet_selection_page.get_sheet_map()
 
@@ -174,15 +174,15 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
                 print("Couldn't open")
                 continue
 
-            if len(source_sheets) == 1:
-                completed_sheets = find_completed_sheets(source_workbook, valid_sheet[0][0], reference_cells, validation_key,
-                                                         validation_key_cells)
+            #if len(source_sheets) == 1:
+             #   completed_sheets = find_completed_sheets(source_workbook, valid_sheet[0][0], reference_cells, validation_key,
+              #                                           validation_key_cells)
         
             # The main algorithm to iterate though each cell that belongs to each sheet and place the values of the cells the correct location 
             # at the destination worbook
             for (sheet_cells, sheets, sheet_columns) in zip(source_cells, source_sheets, destination_columns):
                 for sheet in sheets:
-                    if sheet in completed_sheets:
+                    #if sheet in completed_sheets:
                         for (cell, column) in zip(sheet_cells, sheet_columns):
                             move_cell(count, cell, column, source_workbook.sheets[sheet], destination_sheet)
                         # Increase the row count            
@@ -190,10 +190,10 @@ def excel_excel(Page1: Frame, Page2: Frame, Page3: Frame, Page4: Frame, Page5: F
             
             # Try to save and close the workbook
             try:
-                destination_workbook.save()
-                destination_workbook.close()
+                source_workbook.save()
+                source_workbook.close()
             except:
-                print("Error!")
+                print("Error! Workbook" + workbook + "failed to close")
                 pass
     else:
         print("Something Went Wrong")
