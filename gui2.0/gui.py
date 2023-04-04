@@ -17,10 +17,11 @@ from zlib import Z_FIXED
 from PIL import ImageTk, Image
 from tkinter import filedialog
 from building_blocks import *
+from cell_selection import*
 #from excel_to_excel import excel_excel
 import threading
 
-def browse_dir(directory_label: Label, frame: Frame, sheet_frame: Frame, controller):
+def browse_dir(sheet_frame: Frame, sheet_canvas: Canvas, controller, select_btn: Button):
     
     """_summary_ 
     This function is intended to let the user select a directory so that has
@@ -34,16 +35,6 @@ def browse_dir(directory_label: Label, frame: Frame, sheet_frame: Frame, control
     text_sheet_variable = controller.get_frame(WorkPage).get_sheet_variables()[1]
     sheet_graphics = controller.get_frame(WorkPage).get_sheet_variables()[2]
 
-    # Initial Placements
-
-    x1 = 275
-    x2 = 275
-    y1 = 160 + 85+20
-    y2 = y1 + 40
-
-    placement_x = 290
-    placement_y = 150 + 80
-
     dirname = filedialog.askdirectory()
 
     files_list = find_files(".xlsx", dirname)
@@ -54,14 +45,12 @@ def browse_dir(directory_label: Label, frame: Frame, sheet_frame: Frame, control
             text_sheet_variable.append(StringVar()) # Initializing checkbox text var
             # Create a checkbox object and store in an array
             sheet_graphics.append(Checkbutton(sheet_frame, variable=sheet_variable[i], textvariable= text_sheet_variable[i], font= ('Calabri', 10),
-                                  background=BUTTON_HIGHLIGHT, foreground='white',  borderwidth = 1, relief="ridge",  height=2,
+                                  background=BUTTON_HIGHLIGHT, foreground='white',  borderwidth = 1, relief="ridge",  height=2, cursor="hand2",
                                   activebackground=BUTTON_COLOR, activeforeground='White', selectcolor= BACKGROUND_COLOR )) 
             text_sheet_variable[i].set(source_sheets[i]) # Set the text variable
-            sheet_graphics[i].place(x = placement_x, y = placement_y) # Place the checkbox
-            sheet_graphics[i].update() # Update the gui so width can be obtained
-            sheet_graphics_width = sheet_graphics[i].winfo_width() 
-            placement_x = placement_x +  sheet_graphics_width + 15 # Place the checkbox object relative to the previous checkbox
-
+            sheet_graphics[i].grid(row=1, column=i, padx=5, pady=5)
+    
+    select_btn["state"] = "active"
     
 
 def browse_file(directory_label):
@@ -183,16 +172,45 @@ class WorkPage(tk.Frame):
         
         #---CENTER FRAME---#
         # create the canvas and add it to the window
-        canvas = Canvas(self, width=1330, height=250, bg=SECONDARY_COLOR, highlightthickness=0)
+        cell_select_canvas = Canvas(self, width=1330, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
+        cell_select_canvas.place(x=530, y=520)
+
+        # create a scrollable frame inside the canvas
+        scrollable_cell_sel = Frame(cell_select_canvas, bg=SECONDARY_COLOR)
+        scrollable_cell_sel.bind("<Configure>", lambda e: cell_select_canvas.configure(scrollregion=cell_select_canvas.bbox("all")))
+        cell_select_canvas.create_window((0, 0), window=scrollable_cell_sel, anchor="nw")
+
+        # add a horizontal scrollbar to the canvas
+        scrollbar_cell_sel = Scrollbar(self, orient="horizontal", command=cell_select_canvas.xview)
+        scrollbar_cell_sel.place(x=530, y=520+100, width=1330)
+        cell_select_canvas.configure(xscrollcommand=scrollbar_cell_sel.set)
+
+        # configure the canvas to resize with the window
+        def on_configure(event):
+            cell_select_canvas.configure(scrollregion=cell_select_canvas.bbox("all"))
+
+        cell_select_canvas.bind("<Configure>", on_configure)
+
+        # set the size of the scrollable frame
+        scrollable_cell_sel.update_idletasks()
+        scrollable_cell_sel.config(width=scrollable_cell_sel.winfo_reqwidth(), height=scrollable_cell_sel.winfo_reqheight())
+
+                #---CENTER FRAME---#
+        # create the canvas and add it to the window
+        canvas = Canvas(self, width=1330, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
         canvas.place(x=530, y=220)
 
         # create a scrollable frame inside the canvas
         scrollable_frame = Frame(canvas, bg=SECONDARY_COLOR)
+        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+        sheet_select_lbl = Label(scrollable_frame, text = "Sheet Selection", font=('Calabri', 14), bg= SECONDARY_COLOR, fg='White', background=SECONDARY_COLOR)
+        sheet_select_lbl.grid(row=0, column=0)
 
         # add a horizontal scrollbar to the canvas
         scrollbar = Scrollbar(self, orient="horizontal", command=canvas.xview)
-        scrollbar.place(x=530, y=520-50, width=1330)
+        scrollbar.place(x=530, y=520-190, width=1330)
         canvas.configure(xscrollcommand=scrollbar.set)
 
         # configure the canvas to resize with the window
@@ -205,31 +223,31 @@ class WorkPage(tk.Frame):
         scrollable_frame.update_idletasks()
         scrollable_frame.config(width=scrollable_frame.winfo_reqwidth(), height=scrollable_frame.winfo_reqheight())
 
-        # add some extra widgets to the bottom of the canvas
-        spacer = Frame(canvas, height=20, bg=SECONDARY_COLOR)
-        canvas.create_window((0, 0), window=spacer, anchor="nw")
 
         # Source Workbook Button #
 
-        src_collect_btn = Button(self.left_frame, text ="Xs", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9',
-                            activeforeground='white', width=4, command = lambda :browse_dir(src_lbl))
+        src_collect_btn = Button(self.left_frame, text ="Xs", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9', cursor="hand2",
+                            activeforeground='white', width=4, command = lambda :browse_dir(scrollable_frame, canvas, controller, select_sheets_btn))
         src_collect_btn.place(x=10,y=15)
         
         # Destination Workbook Button #
 
-        des_collect_btn = Button(self.left_frame, text ="X", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9',
+        des_collect_btn = Button(self.left_frame, text ="X", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9', cursor="hand2",
                             activeforeground='white', width=4, command= lambda: browse_file(des_lbl))
         des_collect_btn.place(x=10,y=15+90)
 
         # Open File Button #
 
-        open_file_btn = Button(self.left_frame, text ="+", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9',
+        open_file_btn = Button(self.left_frame, text ="+", font=('Calibri', 25), fg= "white", bg="#5615DE", activebackground='#6017F9', cursor="hand2",
                             activeforeground='white', width=4)
         open_file_btn.place(x=10,y=15+90*2)
+
+        open_scribe_lbl = Label(self, text = "File: ", font=('Calabri', 22), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
+        open_scribe_lbl.place(x = 110, y = 230+2*90)
     
         # Source and Destination Labels #
 
-        src_scribe_lbl = Label(self, text = "Source: ", font=('Calabri', 24), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
+        src_scribe_lbl = Label(self, text = "Source: ", font=('Calabri', 22), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
         src_scribe_lbl.place(x = 110, y = 230)
 
         src_lbl = Label(self, font=('Calabri', 11), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
@@ -240,6 +258,13 @@ class WorkPage(tk.Frame):
 
         des_lbl = Label(self, font=('Calabri', 11), bg= BACKGROUND_COLOR, fg='White', background=BACKGROUND_COLOR)
         des_lbl.place(x = 110+165, y = 250+82)
+
+        select_sheets_btn = Button(self, text="Select", font= ('Calabri', 14), borderwidth=1, relief="ridge",     
+                        background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2", state="disabled"
+                        )
+        select_sheets_btn.place(x = 530, y = 405-40)
+
+        cell_selection(scrollable_cell_sel)
 
         #----------VARIABLES-----------#
         
@@ -287,3 +312,4 @@ class FinishedPage(tk.Frame):
 if __name__ == "__main__":
     app = tkinterApp()
     app.mainloop()
+
