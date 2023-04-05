@@ -42,4 +42,7 @@ def cell_selection(root: Frame):
                 background= "#800020", foreground='White', activebackground="#a6022b" , activeforeground="White", cursor="hand2", state="disabled"
                 )
     new_cells_btn.grid(row=1, rowspan= 2, column=21, padx=4)
+
     
+    
+
