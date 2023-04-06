@@ -172,7 +172,7 @@ class WorkPage(tk.Frame):
         
         #---CENTER FRAME---#
         # create the canvas and add it to the window
-        cell_select_canvas = Canvas(self, width=1330, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
+        cell_select_canvas = Canvas(self, width=795, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
         cell_select_canvas.place(x=530, y=520)
 
         # create a scrollable frame inside the canvas
@@ -182,7 +182,7 @@ class WorkPage(tk.Frame):
 
         # add a horizontal scrollbar to the canvas
         scrollbar_cell_sel = Scrollbar(self, orient="horizontal", command=cell_select_canvas.xview)
-        scrollbar_cell_sel.place(x=530, y=520+100, width=1330)
+        scrollbar_cell_sel.place(x=530, y=520+100, width=795)
         cell_select_canvas.configure(xscrollcommand=scrollbar_cell_sel.set)
 
         # configure the canvas to resize with the window
@@ -197,7 +197,7 @@ class WorkPage(tk.Frame):
 
                 #---CENTER FRAME---#
         # create the canvas and add it to the window
-        canvas = Canvas(self, width=1330, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
+        canvas = Canvas(self, width=795, height=110, bg=SECONDARY_COLOR, highlightthickness=0)
         canvas.place(x=530, y=220)
 
         # create a scrollable frame inside the canvas
@@ -210,7 +210,7 @@ class WorkPage(tk.Frame):
 
         # add a horizontal scrollbar to the canvas
         scrollbar = Scrollbar(self, orient="horizontal", command=canvas.xview)
-        scrollbar.place(x=530, y=520-190, width=1330)
+        scrollbar.place(x=530, y=520-190, width=795)
         canvas.configure(xscrollcommand=scrollbar.set)
 
         # configure the canvas to resize with the window
